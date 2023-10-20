@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_ALL);
+//error_reporting(E_ALL);
 use function PHPSTORM_META\type;
 
 class Db{
@@ -82,7 +82,7 @@ class Db{
         $query = substr($query,0,-1);
         $query.=")";
 
-       // echo $query;
+       //echo $query;
 
         if(mysqli_query($this->connessione,$query)){
 

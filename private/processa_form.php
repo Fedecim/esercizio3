@@ -10,7 +10,13 @@ if(isset($_POST["registrati"])){
         "ruolo"=>$_POST["ruolo"],
         "chiave"=>$_POST["chiave"]
     );
+    echo $dati["chiave"];
     $reg = new regController();
-    $reg->add_utente($dati);
+    $reg->registrati($dati);
+}
+else if(isset($_POST["disconnessione"])){ 
+    session_destroy();
+    header("Location: http://localhost/esercizio3/public/login.php");
+    exit();
 }
 ?>

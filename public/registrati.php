@@ -27,7 +27,7 @@ if(isset($_SESSION) && isset($_SESSION["login"]) && $_SESSION["login"] == true){
 </head>
 <body>
     <p id="test"></p>
-    <form action="processa_form.php" method="post">
+    <form action="/esercizio3/private/processa_form.php" method="post">
         <label for="username">username</label>
         <input type="text" name="username" id="username">
         <label for="email">email</label>
@@ -41,6 +41,7 @@ if(isset($_SESSION) && isset($_SESSION["login"]) && $_SESSION["login"] == true){
             <input type="text" name="chiave" id="chiave">
         </div>
         <input type="hidden" name="ruolo" value="utente">
+        <input type="hidden" name="registrati">
         <input type="submit" value="invia">
     </form>
 </body>
