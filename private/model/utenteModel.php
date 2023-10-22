@@ -36,5 +36,42 @@ class utente{
             throw $err;
         }
     }
+
+    public function getUtente($dati){
+        // utente per il logi : utente_log pass : passwd_utentelog
+        /*
+        
+         $colonne = $parametri["colonne"];
+        $nome_tab = $parametri["nome_tab"];
+        $col_cond = $parametri["col_cond"];
+        $condizione = $parametri["condizione"];*/
+        
+        // dati per la connessione al database
+        $dati_connessione = array(
+            "nome_server"=>"127.0.0.1",
+            "nome_db"=>"esercizio3",
+            "porta"=>"3306",
+            "utente"=>"utente_log",
+            "password"=>"passwd_utentelog"
+        );
+        // istanza oggetto classe Db 
+        $db = new Db($dati_connessione);
+        // preparo dati per la select
+        $colonne[0] = "id"; 
+        $colonne[1] = "username"; 
+        $colonne[2] = "password";
+        $colonne[3] =  "email";
+        $colonne[4] = "ruolo_id";
+        $dati_select = array(
+            "colonne" => $colonne,
+            "nome_tab" => "utenti",
+            "col_cond" =>"email",
+            "condizione" => "'".$dati["email"]."'"
+        );
+        // eseguo la select alla tabella utenti
+        $risultato = $db->select($dati_select);
+        return $risultato;
+
+    }
 }
 ?>

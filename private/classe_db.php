@@ -82,7 +82,7 @@ class Db{
         $query = substr($query,0,-1);
         $query.=")";
 
-       //echo $query;
+       echo $query;
 
         if(mysqli_query($this->connessione,$query)){
 
@@ -179,6 +179,31 @@ class Db{
         }
         mysqli_close($this->connessione);
         return true;
+    }
+    public function query($parametri){ // i paramentri sono la query e un booleano : true = select false tutte le altre op.
+        try {
+            $this->connetti();
+        } catch (Exception $err) {
+            echo $err;
+        }
+        if($parametri["operazione"] == "select"){
+            $risultato_array = array();
+            $dati = mysqli_query($this->connessione,$parametri["query"]);
+            if(mysqli_num_rows($dati) > 0){
+                //restiuisci il risultato come un array associativo
+                while($riga = mysqli_fetch_assoc($dati)){
+                    $risultato_array[] = $riga;
+                }
+                //mysqli_close($this->connessione);
+                return $risultato_array;
+            }
+            else
+            {
+                //mysqli_close($this->connessione);
+                return "nessun risultato trovato<br>";
+            }
+        }
+        mysqli_close($this->connessione);
     }
 }
 ?>

@@ -1,0 +1,316 @@
+applicazione web che consente di visualizzare dati di un magazzino di merce reperibile (con data di scadenza) . 
+E' possibile utilizzare l'applicazione dopo essersi registrati e loggati.
+Esiste una tipologia di utenti 'admin' che avrà accesso alla tabella prodotti e potrà modificarne il contenuto .
+Mentre gli utenti navigatori potranno visualizzare il contenuto.
+I prodotti sono rappresentati da : id, nome, prezzo, data_scadenza, quantita.
+Oltre a queste informazioni gli utenti visualizzeranno i prodotti in questo modo :
+
+PRODOTTI SCADENZA IMMINENTE (3 giorni alla scadenza)
+PRODOTTI SCADENZA TRA UNA SETTIMANA
+PRODOTTI SCADUTI
+TUTTI GLI ALTRI PRODOTTI.
+
+oltre alla scadenza gli utenti potranno visualizzare il valore totale della merce in magazzino
+
+automaticamente i prodotti che superano la data attuale dovrebbero inserire nella colonna scaduto il valore true
+.
+Progettazione applicazione:
+
+requisiti :
+- registrazione
+- login
+- area privata_utente
+	- visualizzazione tabella prodotti
+		- visualizzare : id, nome, prezzo (unitario), quantita magazzino divisi in : prod. scadenza 3 gg, prod scadenza 7 gg, prod 		  scaduti, tutti gli altri prodotti.
+		- Comando che permette in seguito alla visualizzazione di eliminare i prodotti scaduti dalla tabella
+- area privata_admin:
+	- manipolazione tabella prodotti
+		- select(visualizzazione come utenti), update,delete,insert
+
+Progettazione banca dati :
+
+database : esercizio3
+
+tabella ruoli
+id(int, primary_key),user(varchar),password(varchar)
+
+tabella utenti
+id(int, primary_key),username(varchar),password(varchar),email(varchar)(unique),ruolo_id(foreign key)
+
+tabella prodotti
+id(int, primary_key),nome(varchar),prezzo(float),data_scadenza(date),quantita(int),scaduto(bool)
+
+// profilazione utenti :
+
+utente_admindb
+operazioni : amministratore del database : esercizio3
+permessi : tutti i permessi sul database esercizio3
+user : admin_db
+password: passwd_admindb
+id : 0
+
+utente_log :
+
+operazioni : accedere alla tabella utente effettuare una select per estrarre id,username,password,email e ruolo_id
+permessi : accesso al database esercizio3, accesso alla tabella utenti con permessi di select
+user : utente_log
+password : passwd_utentelog
+id : 1
+
+utente_ruoli
+
+operazioni : accedere alla tabella ruoli effettuare una select in base all' id per estrarre username e password
+permessi : accesso al database esercizio3, accesso alla tabella ruoli con permessi di select
+user : utente_ruoli
+password: passwd_utenteruoli
+id : 2
+
+utente_reg
+
+operazioni : accedere alla tabella utenti per effettuare una insert into
+permessi : accesso al database esercizio3 , accesso alla tabella utenti con permessi di insert
+user : utente_reg
+password: passwd_utentereg
+id : 3
+
+utente_nav:
+operazioni : accedere alla tabella prodotti per effettuare una select
+permessi : accesso al database esercizio3 , accesso alla tabella prodotti con permessi di select
+user : utente_nav
+password: passwd_utentenav
+id : 4
+
+utente_admin:
+operazioni : accedere alla tabella prodotti per effettuare : select,update,delete,insert
+permessi : accesso al database esercizio3 , accesso alla tabella prodotti con permessi di select,update,delete,insert
+user : utente_admin
+password: passwd_utenteadmin
+id : 5
+
+
+// implementazione utenti , tabelle e insert nella tabella utenti
+//fine banca dati
+
+Struttura applicazione :
+
+- public:
+	- index.php // pagina index reinderizza alla pagina login o all area privata nel caso vi sia una sessione attiva
+	- login.php // pagina con il form di login raccoglie email e password
+	- registrati.php // pagina con il form di registrazione raccoglie : username,email,password,ruolo*
+- private :
+	-controller: // classi di oggetti che gestiscono gli input utente e manipolano i model 
+		- userController.php // gestisce le operazioni/richieste degli utenti che hanno effettuato il log
+		- regController.php // gestisce operazioni di registrazione
+		- logController.php // gestisce operazioni di login
+	model : // classi di oggetti che interagiscono con il database
+		- prodModel.php // gestisce operazioni sulla tabella prodotti
+		- utenteModel.php // gestisce operazioni sulla tabella utenti 
+	- classe_db.php // modulo php che contiene la classe : Db che offre i metodi per interagire con un database tramite dbms mysql
+	- dashboard_utente.php // area privata utente
+	- dashboard_admin.php // area privata admin
+	- processa_form.php // modulo che processa le richieste in arrivo dai form
+
+Progettazione Funzionalità :
+
+- Registrazione : 
+
+operazioni :
+- utente compila il form e invia i dati al modulo 'processa_form.php' tramite metodo http post
+- il modulo processa la richiesta e invia i dati al modulo 'regController.php' tramite metodo 'registrazione' della classe regController
+- il modulo processa i dati e gli invia al modulo 'utenteModel.php' tramite metodo 'add_utente' della classe utente
+- il metodo della classe prepara  i dati ed effettua la query di insert tramite metodo 'insert' della classe 'Db'
+- il modulo 'regController' riceve la risposta e nel caso di successo indirizza l'utente all'area privata altrimenti restituisce messaggio di errore.
+
+moduli coinvolti :
+registrati.php
+regController.php
+utenteModel.php
+classe_db.php
+
+dettagli : 
+L' utente invierà tramite metodo post il contenuto di un form che raccoglie : username,email,password,ruolo*.
+per il ruolo l'utente deve poter scegliere se è un normale utente o un amministratore tramite una selezione si/no
+se seleziona si l'utente dovrà inserire una chiave oltre ai normali dati per potersi registrare, in questo caso 
+il form invierà il campo ruolo = a 'admin' in caso contrario di default sarà uguale a 'utente'.
+il form sarà inviato tramite metodo post al modulo : 'processa_form.php'
+il modulo invierà la richiesta al modulo regController.php che dopo aver preparato i dati gli passa al modulo utenteModel.php tramite il metodo
+add_utente() della classe utente.
+il modulo prepara i dati per la connessione al db tramite l'utente : utente_reg, in seguito passa i dati per effettuare la query di insert
+in caso di insuccesso restituisce eccezione altrimenti restituisce il valore booleano true
+il modulo regController riceve la risposta e nel caso di successo visualizza stringa : 'registrazione avvenuta con successo' e aggiunge link per accedere all'area privata.
+
+Sessione:
+Dovrà essere gestita la sessione in particolare dopo il successo della registrazione dovranno essere aggiunti alla sessione attiva i seguenti
+dati : 
+Login: true,
+username : username,
+email : email,
+ruolo : ruolo_id
+
+Login :
+
+operazioni :
+
+- l'utente compila un form inserendo email e password e lo invia al modulo processa_form.php
+- il modulo processa la richiesta estrae i dati e li invia al modulo 'logController.php' 
+- il modulo processa i dati e li invia al modulo 'utentiModel.php' 
+- il modulo utenti prepara i dati ed effettua una query per estrarre tutti i dati dell utente tramite una select in base alla email
+- il modulo restituisce la risposta al controller logController.php
+- il controller in caso di risposta positiva indirizza l'utente alla giusta pagina privata (in base a ruolo_id) in caso di risposta negativa indirizza alla pagina di login con messaggio di errore
+
+Sessione:
+dovra essere gestita la sessione in particolare dopo la risposta di avvenuto login dovrebbero essere aggiunti alla sessione attiva i seguenti dati :
+Login: true,
+username : username,
+email : email,
+ruolo : ruolo_id
+
+moduli coinvolti :
+login.php
+logController.php
+utenteModel.php
+classe_db.php
+
+Area Privata Utente :
+
+operazioni :
+
+- l'utente per accedere alla pagina deve avere una sessione attiva con i seguenti dati : Login: true, username : username, email : email, 
+ruolo : ruolo_id
+- l utente tramite metodo post (form, submit) potrà visualizzare la tabella prodotti con i requisiti specificati la richiesta sarà inviata al modulo 'processa_form.php'
+- il modulo processa la richiesta e la invia al modulo 'userController.php' 
+- il controller prepara i dati e li invia al modulo 'prodottiModel.php' 
+- il modulo effettua la query tramite metodo della classe Db e restituisce il risultato
+- il controller ricevuto il risultato mostra la tabella o messaggio di errore in base allo stato del risultato
+
+moduli coinvolti :
+
+userController.php
+prodModel.php 
+processa_form.php
+classe_db.php
+dashboard_utente.php 
+dashboard_admin.php
+
+Sessione :
+la sessione dovrà essere gestita :
+- nel modulo dashboard_utente.php per verificare cha abbia i dati : Login: true, username : username, email : email, 
+ruolo : ruolo_id.
+- nel modulo processa_form.php dovrà estrarre i seguenti dati dalla sessione : ruolo : ruolo_id per inviarlo al modulo userController
+
+Area Privata Admin
+
+operazioni :
+- l'utente amministratore per accedere alla pagina deve avere una sessione attiva con i seguenti dati : Login: true, username : username, email : email, 
+ruolo : ruolo_id , dove ruolo_id deve essere uguale a 5
+- l'utente tramite form potrà inviare direttamente la query da eseguire e visualizzare il risultato e avrà un tasto mostra tabella con le stesse funzionalità dell utente navigatore. Il form sarà inviato tramite metodo post al modulo 'processa_form.php'
+- il modulo processa la richiesta e la invia al modulo userController.php
+- il controller prepara i dati e li invia al modulo 'prodottiModel.php'
+- il model prepara i dati ed effettua la query al db e restituisce il risultato
+- il controller riceve il risultato e lo mostra all utente.
+
+
+moduli coinvolti :
+
+userController.php
+prodModel.php 
+processa_form.php
+classe_db.php
+dashboard_admin.php
+
+
+
+Implementazione Struttura Applicazione:
+
+// creazione directory principale
+cd /opt/lampp/htdocs && sudo mkdir esercizio3 && sudo chmod 777 esercizio3 && cd esercizio3
+
+// creazione cartelle private e public :
+sudo mkdir private && sudo chmod 777 private && sudo mkdir public && sudo chmod 777 public
+
+// creazione file cartella public(index.php,registrati.php,login.php):
+sudo touch index.php && sudo chmod 777 index.php && sudo touch registrati.php $$ sudo chmod 777 registrati.php && sudo touch login.php
+&& sudo chmod 777 login.php 
+
+// creazione cartelle nella cartella private:(model,controller)
+cd private && sudo mkdir model && sudo chmod 777 model && sudo mkdir controller && sudo chmod 777 controller
+
+// creazione file cartella private (processa_form.php,dashboard_utente.php,dashboard_admin.php)
+sudo touch processa_form.php && sudo chmod 777 processa_form.php && sudo touch dashboard_utente.php $$ sudo chmod 777 dashboard_utente.php && sudo touch dashboard_admin.php && sudo chmod 777 dashboard_admin.php
+
+// creazione file cartella model (prodModel.php,utenteModel.php)
+cd model && sudo touch prodModel.php && sudo chmod 777 prodModel.php && sudo touch utenteModel.php $$ sudo chmod 777 utenteModel.php
+
+// creazione file cartella controller (userController.php, regController.php, logController.php)
+cd controller && sudo touch userController.php && sudo chmod 777 userController.php && sudo touch regController.php $$ sudo chmod 777 regController.php && sudo touch logController.php && sudo chmod 777 logController.php
+
+// avvio repos git
+cd /opt/lampp/htdocs/esercizio3
+git init
+git add .
+git commit -m"struttura progetto iniziale"
+
+// trasferire repos git appena creato su repos remoto github
+git remote add origin https://github.com/Fedecim/esercizio3.git
+git branch -M main
+git push -u origin main
+
+
+Implementazione funzionalità : registrazione
+
+moduli coinvolti : registrati.php, regController.php, utenteModel.php, classe_db.php
+
+progettazione registrati.php :
+- avviare una sessione
+- controllare che la sessione attiva non abbia i campi :  dati : Login: true, username : username, email : email. Nel caso ci siano indirizzare l'utente verso area_privata appropriata
+nel caso non ci sia una sessione attiva proseguire
+- scrivere struttura pagina html
+- aggiungere form con tag label e input per : username,email,password
+- aggiungere input di tipo checkbox per fare selezionare all utente se intende registrarsi come admin
+- aggiungere un div all interno del form con id 'chiave_admin' il div deve avere style : display = none da manipolare con javascript nel caso l utente voglia registrarsi come admin (deve passare una chiave)
+- scrivere codice javascript per manipolare input checkbox : se viene selezionato deve mostrare all utente il div per l'inserimento della chiave registrazione admin
+- il form di registrazione deve avere metodo post e inviare al modulo processa_form.php
+- fine
+
+implementazione registrati.php
+
+Progettazione processa_form.php:
+
+- avviare una sessione
+- includi i seguenti moduli : regController.php
+- controllare se esiste la variabile post[registrazione]
+- se esiste crea un array assoc di nome $dati
+- estrai dalla variabile post i seguenti dati : username,password,email,ruolo e chiave(Se presente) e inseriscili nell array dati con le seguenti chiavi : username,password,email,ruolo,chiave
+- crea un oggetto regController di nome : reg e invoca il metodo : registrazione($dati) dell oggetto reg della classe regControler passando l'array dati come parametro
+- fine
+
+implementazione processa_form.php
+
+Progettazione metodo registrazione($dati) della classe regController modulo : regController.php
+
+- avvia una sessione
+- controlla che tutti i campi dell array ovvero : username,password,email,ruolo siano stati inseriti
+- controlla se è stato inserito il campo chiave in caso di conferma confronta la chiave inserita con la chiave : 'CHIAVE_ACCESSO_ADMIN' se sono uguali prosegue altrimenti
+reinderizza alla pagina registrazione con mex di errore : 'chiave inserita non valida'
+- controlla che email non sia una stringa vuota
+- prende il campo ruolo e lo cambia in : se = ad admin diventa = 5 se = a utente diventa = a 4
+- crea oggetto di classe utente di nome $utente e invoca il metodo add_utente($dati)
+- mette l'invocazione del metodo sotto try nel caso restituisce eccezione reinderizzare alla pagina registrati.php con mex di errore
+- altrimenti inserisci nella sessione attiva i seguenti dati : Login: true, username : username, email : email
+- visualizza stringa : 'registrazione completata con successo'
+- visualizza link che porta all area privata corretta
+- fine
+
+Progettazione metodo add_utente($dati)
+- crea array $dati_conn con dati per stabilire connessione con database tramite : server_name : 127.0.0.1, porta : 3306, utente : utente_reg , password: passwd_utente_reg , nome_db : esercizio3
+- crea un oggetto $db di classe Db passando i dati al costruttore.
+- crea un array indicizzato con le colonne dei valori (username,email,password,ruolo_id)
+- crea un array indicizzato con i valori delle colonne (......) inserendo : " ' " prima e dopo le stringhe
+- crea un array assoc di nome $dati_query con i seguenti dati : campi : arraycolonne, valori : arrayvalori, nome_tab : nome_tabella(utenti)
+- invoca sull oggetto il metodo insert passando l' array assoc $dati_query come parametro
+- il metodo sotto try se restituisce eccezione lancia a sua volta un eccezione dello stesso tipo con lo stesso messaggio di errore
+- se il metodo va a buon fine restituisce stringa : 'registrazione avvenuta con successo!"
+
+
+
+

@@ -8,19 +8,20 @@ class regController{
             $dati["ruolo"] = 4;
             // controllo se l utente ha intenzione di regstrarsi come admin e ha passato la chiave
             if(isset($dati["chiave"]) && $dati["chiave"] != NULL){
-                echo "ecco chiave";
+                //echo "ecco chiave";
                 // controllo che la chiave sia correetta
                 if($dati["chiave"] == "CHIAVE_ACCESSO_ADMIN"){
-                    echo "hai la chiave giusta";
+                    //echo "hai la chiave giusta";
                     // imposto il ruolo su admin
                     $dati["ruolo"] = 5;
                 }
                 else{
-                    echo "ci hai provato";
+                    //echo "ci hai provato";
+                    header("Location: http://localhost/esercizio3/public/registrati.php");
+                    exit();
                 }
             }
-            else{
-                try {
+            try {
                     $utente = new utente();
                     $utente->add_utente($dati);
                     // imposto la sessione con i dati 
@@ -28,14 +29,21 @@ class regController{
                     $_SESSION["ruolo"] = $dati["ruolo"];
                     $_SESSION["username"] = $dati["username"];
                     //
-                    echo "Registrazione avvenuta con successo";
+                    echo "Registrazione avvenuta con successo<br>";
+                    if($dati["ruolo"] == 4){
+                        echo "Accedi alla tua <a href='http://localhost/esercizio3/private/dashboard_utente.php'>homepage</a>";
+                    }
+                    else if($dati["ruolo"] == 5){
+                        echo "Accedi alla tua <a href='http://localhost/esercizio3/private/dashboard_admin.php'>homepage</a>";
+                    }
+
                 } catch (Exception $err) {
-                    //echo $err;
+                    echo $err;
                     echo "Errore ritorna alla pagina di registrazione<br><br>";
                     echo "<a href='http://localhost/esercizio3/public/registrati.php'>pagina di registrazione</a>";
                 }
             }
         }
     }
-}
+
 ?>
