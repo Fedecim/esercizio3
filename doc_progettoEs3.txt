@@ -236,3 +236,56 @@ autenticato e il suo ruolo per indirizzarlo alla dashboard corretta.
 Se l'utente desidera registrarsi come amministratore, oltre ai dati di un utente normale, deve inserire una chiave. 
 La chiave è: CHIAVE_ACCESSO_ADMIN. Se l'utente inserisce correttamente questa chiave 
 sarà registrato come utente amministratore.
+
+**aggiunta visualizzazione tabella prodotti
+Il controllo sulla data per la tabella prodotti (prodotti scaduti) andrà effettuato
+tramite funzioni per manipolare le date del dbms mysql
+
+query da eseguire :
+
+prodotti in scadenza tra una settimana
+SELECT * FROM prodotti WHERE  data_scadenza > CURDATE() AND data_scadenza <= DATE_ADD(CURDATE(),INTERVAL 7 DAY)
+
+prodotti in scadenza tra 3 giorni:
+SELECT * FROM prodotti WHERE data_scadenza > CURDATE() AND data_scadenza <= DATE_ADD(CURDATE(), INTERVAL 3 DAY)
+
+prodotti in scadenza oggi:
+SELECT * FROM prodotti WHERE data_scadenza = CURDATE()
+
+prodotti scaduti:
+SELECT * FROM prodotti WHERE data_scadenza < CURDATE()
+
+Implementazione Struttura Applicazione:
+
+// creazione directory principale
+cd /opt/lampp/htdocs && sudo mkdir esercizio3 && sudo chmod 777 esercizio3 && cd esercizio3
+
+// creazione cartelle private e public :
+sudo mkdir private && sudo chmod 777 private && sudo mkdir public && sudo chmod 777 public
+
+// creazione file cartella public(index.php,registrati.php,login.php):
+sudo touch index.php && sudo chmod 777 index.php && sudo touch registrati.php $$ sudo chmod 777 registrati.php && sudo touch login.php
+&& sudo chmod 777 login.php 
+
+// creazione cartelle nella cartella private:(model,controller)
+cd private && sudo mkdir model && sudo chmod 777 model && sudo mkdir controller && sudo chmod 777 controller
+
+// creazione file cartella private (processa_form.php,dashboard_utente.php,dashboard_admin.php)
+sudo touch processa_form.php && sudo chmod 777 processa_form.php && sudo touch dashboard_utente.php $$ sudo chmod 777 dashboard_utente.php && sudo touch dashboard_admin.php && sudo chmod 777 dashboard_admin.php
+
+// creazione file cartella model (prodModel.php,utenteModel.php)
+cd model && sudo touch prodModel.php && sudo chmod 777 prodModel.php && sudo touch utenteModel.php $$ sudo chmod 777 utenteModel.php
+
+// creazione file cartella controller (userController.php, regController.php, logController.php)
+cd controller && sudo touch userController.php && sudo chmod 777 userController.php && sudo touch regController.php $$ sudo chmod 777 regController.php && sudo touch logController.php && sudo chmod 777 logController.php
+
+// avvio repos git
+cd /opt/lampp/htdocs/esercizio3
+git init
+git add .
+git commit -m"struttura progetto iniziale"
+
+// trasferire repos git appena creato su repos remoto github
+git remote add origin https://github.com/Fedecim/esercizio3.git
+git branch -M main
+git push -u origin main
