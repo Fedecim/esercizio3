@@ -1,0 +1,238 @@
+Documentazione Applicazione Web per la Gestione Magazzino
+Introduzione
+
+L'applicazione web permette agli utenti registrati di visualizzare i dati di un magazzino contenente merci con data di scadenza. 
+Gli utenti possono accedere all'applicazione dopo essersi registrati e aver effettuato il login. 
+Ci sono due tipologie di utenti: gli 'admin' che hanno accesso completo alla tabella dei prodotti 
+e gli utenti navigatori che possono visualizzare il contenuto ma senza diritto di modifica. 
+I prodotti nel magazzino sono identificati da id, nome, prezzo, data di scadenza e quantità.
+
+Progettazione dell'Applicazione
+Requisiti
+
+    Registrazione: Gli utenti possono registrarsi fornendo username, email, password e ruolo (admin o utente).
+    Login: Gli utenti registrati possono effettuare il login con email e password.
+    Area Privata Utente: Gli utenti loggati possono visualizzare la tabella dei prodotti con le seguenti categorie: prodotti con scadenza entro 3 giorni, prodotti con scadenza tra una settimana, prodotti scaduti e tutti gli altri prodotti.
+    Area Privata Admin: Gli utenti admin hanno accesso completo alla tabella prodotti e possono eseguire operazioni di select, update, delete e insert.
+
+Progettazione della Banca Dati
+Struttura del Database: esercizio3
+
+    Tabella Ruoli:
+        id (int, primary key)
+        nome (varchar)
+        user (varchar)
+        password (varchar)
+
+    Tabella Utenti:
+        id (int, primary key)
+        username (varchar)
+        password (varchar)
+        email (varchar, unique)
+        ruolo_id (foreign key referencing ruoli.id)
+
+    Tabella Prodotti:
+        id (int, primary key)
+        nome (varchar)
+        prezzo (float)
+        data_scadenza (date)
+        quantita (int)
+        scaduto (bool)
+
+Profilazione Utenti
+
+    utente_admindb:
+        Operazioni: Amministratore del database esercizio3
+        Permessi: Tutti i permessi sul database esercizio3
+        User: admin_db
+        Password: passwd_admindb
+        Id: 0
+
+    utente_log:
+        Operazioni: Accesso alla tabella utente, eseguire una select per estrarre id, username, password, email e ruolo_id
+        Permessi: Accesso al database esercizio3, accesso alla tabella utenti con permessi di select
+        User: utente_log
+        Password: passwd_utentelog
+        Id: 1
+
+    utente_ruoli:
+        Operazioni: Accesso alla tabella ruoli, eseguire una select in base all' id per estrarre username e password
+        Permessi: Accesso al database esercizio3, accesso alla tabella ruoli con permessi di select
+        User: utente_ruoli
+        Password: passwd_utenteruoli
+        Id: 2
+
+    utente_reg:
+        Operazioni: Accesso alla tabella utenti per effettuare una insert into
+        Permessi: Accesso al database esercizio3, accesso alla tabella utenti con permessi di insert
+        User: utente_reg
+        Password: passwd_utentereg
+        Id: 3
+
+    utente_nav:
+        Operazioni: Accesso alla tabella prodotti per effettuare una select
+        Permessi: Accesso al database esercizio3, accesso alla tabella prodotti con permessi di select
+        User: utente_nav
+        Password: passwd_utentenav
+        Id: 4
+
+    utente_admin:
+        Operazioni: Accesso alla tabella prodotti per eseguire select, update, delete, insert
+        Permessi: Accesso al database esercizio3, accesso alla tabella prodotti con permessi di select, update, delete, insert
+        User: utente_admin
+        Password: passwd_utenteadmin
+        Id: 5
+
+Creazione Utenti e Tabelle nel Database
+Creazione Utenti
+
+sql
+
+CREATE USER 'admin_db2'@'127.0.0.1' IDENTIFIED BY 'password_admindb2';
+CREATE USER 'utente_reg'@'127.0.0.1' IDENTIFIED BY 'password_utentereg';
+CREATE USER 'utente_log'@'127.0.0.1' IDENTIFIED BY 'password_utentelog';
+CREATE USER 'utente_admin'@'127.0.0.1' IDENTIFIED BY 'password_utenteadmin';
+CREATE USER 'utente_nav'@'127.0.0.1' IDENTIFIED BY 'password_utentenav';
+
+Creazione Tabelle
+
+sql
+
+CREATE TABLE ruolo (
+    id INT PRIMARY KEY,
+    nome VARCHAR(255),
+    user VARCHAR(255),
+    password VARCHAR(255)
+);
+
+CREATE TABLE utenti (
+    id INT PRIMARY KEY,
+    nome VARCHAR(255),
+    password VARCHAR(255),
+    ruolo_id INT,
+    FOREIGN KEY (ruolo_id) REFERENCES ruolo(id)
+);
+
+CREATE TABLE prodotti (
+    id INT PRIMARY KEY,
+    nome VARCHAR(255),
+    descrizione TEXT,
+    prezzo INT,
+    quantita_magazzino INT
+);
+
+Inserimento Ruoli Utenti nella Tabella ruoli
+
+sql
+
+INSERT INTO ruolo (id, nome, user, password) VALUES (0, 'utente_admindb', 'utente_admindb', 'password_admindb');
+INSERT INTO ruolo (id, nome, user, password) VALUES (1, 'utente_reg', 'utente_reg', 'password_utentereg');
+INSERT INTO ruolo (id, nome, user, password) VALUES (2, 'utente_log', 'utente_log', 'password_utentelog');
+INSERT INTO ruolo (id, nome, user, password) VALUES (3, 'utente_admin', 'utente_admin', 'password_utenteadmin');
+INSERT INTO ruolo (id, nome, user, password) VALUES (4, 'utente_navigatore', 'utente_navigatore', 'password_utentenav');
+
+Assegnazione dei Permessi
+
+sql
+
+-- Modifica privilegi per 'admin_db2'@'127.0.0.1'
+GRANT ALL PRIVILEGES ON `esercizio3`.* TO 'admin_db2'@'127.0.0.1' WITH GRANT OPTION;
+
+-- Modifica privilegi per 'utente_reg'@'127.0.0.1'
+GRANT INSERT ON `esercizio3`.`utenti` TO 'utente_reg'@'127.0.0.1';
+GRANT SELECT (`id`, `nome`) ON `esercizio3`.`ruolo` TO 'utente_reg'@'127.0.0.1';
+
+-- Modifica privilegi per 'utente_log@'127.0.0.1'
+GRANT SELECT (`id`, `user`, `password`) ON `esercizio3`.`ruolo` TO 'utente_log'@'127.0.0.1';
+GRANT SELECT ON `esercizio3`.`utenti` TO 'utente_log'@'127.0.0.1';
+
+-- Modifica privilegi per 'utente_nav'@'127.0.0.1'
+GRANT SELECT (`id`, `nome`, `descrizione`, `prezzo`) ON `esercizio3`.`prodotti` TO 'utente_nav'@'127.0.0.1';
+
+-- Modifica privilegi per 'utente_admin'@'127.0.0.1'
+GRANT SELECT, INSERT, UPDATE, DELETE ON `esercizio3`.`prodotti` TO 'utente_admin'@'127.0.0.1';
+
+Struttura dell'Applicazione
+Directory
+
+    public:
+        index.php: Pagina principale che reindirizza gli utenti alla pagina di login o all'area privata se è presente una sessione attiva.
+        login.php: Pagina contenente il form di login per inserire email e password.
+        registrati.php: Pagina contenente il form di registrazione con campi per username, email, password e ruolo.
+
+    private:
+
+        controller:
+            userController.php: Gestisce le operazioni/richieste degli utenti che hanno effettuato il login.
+            regController.php: Gestisce operazioni di registrazione.
+            logController.php: Gestisce operazioni di login.
+
+        model:
+            prodModel.php: Gestisce operazioni sulla tabella prodotti.
+            utenteModel.php: Gestisce operazioni sulla tabella utenti.
+        
+        scriptjs:
+            script.js Contiene codice javascript per la pagina registrazione.php
+            script_admin.js Contiene codice javascript per la pagina dashboard_admin.php
+
+        classe_db.php: Modulo PHP che contiene la classe Db che offre i metodi per interagire con il database tramite il DBMS MySQL.
+
+        dashboard_utente.php: Pagina dell'area privata dell'utente.
+
+        dashboard_admin.php: Pagina dell'area privata dell'admin.
+
+        processa_form.php: Modulo che processa le richieste dai form.
+
+Progettazione delle Funzionalità
+Registrazione
+
+    Operazioni:
+        L'utente compila il form di registrazione con username, email, password e ruolo (admin o utente).
+        Il modulo processa_form.php riceve i dati tramite il metodo POST.
+        Il modulo invia i dati al regController.php tramite il metodo registrazione della classe regController.
+        Il regController.php prepara i dati e li passa al utenteModel.php tramite il metodo add_utente della classe utente.
+        Il utenteModel.php prepara i dati per la connessione al database e effettua la query di INSERT nella tabella utenti usando il metodo insert della classe Db.
+        Se l'operazione ha successo, viene restituito true. In caso contrario, viene generata un'eccezione.
+        Il regController.php riceve la risposta e, in caso di successo, mostra il messaggio "Registrazione avvenuta con successo" e aggiunge un link per accedere all'area privata. In caso di errore, mostra un messaggio di errore.
+
+Login
+
+    Operazioni:
+        L'utente compila il form di login con email e password.
+        Il modulo processa_form.php riceve i dati tramite il metodo POST.
+        Il modulo invia i dati al logController.php.
+        Il logController.php prepara i dati e li passa al utenteModel.php tramite il metodo login della classe utente.
+        Il utenteModel.php prepara i dati per la connessione al database e effettua una query di SELECT nella tabella utenti per estrarre tutti i dati dell'utente in base all'email fornita.
+        Se l'email e la password corrispondono, vengono restituiti i dati dell'utente. Altrimenti, viene restituito un messaggio di errore.
+        Il logController.php riceve la risposta e, in caso di successo, reindirizza l'utente all'area privata corretta (in base al ruolo). In caso di errore, reindirizza l'utente alla pagina di login con un messaggio di errore.
+
+Area Privata Utente
+
+    Operazioni:
+        L'utente, dopo aver effettuato il login, può accedere all'area privata.
+        L'utente può visualizzare la tabella dei prodotti con le seguenti categorie:
+            Prodotti con scadenza entro 3 giorni.
+            Prodotti con scadenza tra una settimana.
+            Prodotti scaduti.
+            Tutti gli altri prodotti.
+        L'utente può eliminare i prodotti scaduti dalla tabella tramite un comando specifico.
+        L'utente può visualizzare il valore totale della merce in magazzino.
+
+Area Privata Admin
+
+    Operazioni:
+        L'utente admin, dopo aver effettuato il login, può accedere all'area privata admin.
+        L'utente admin può eseguire operazioni di SELECT, UPDATE, DELETE e INSERT sulla tabella dei prodotti.
+        L'utente admin può anche visualizzare la tabella dei prodotti con le stesse funzionalità degli utenti navigatori.
+
+Gestione della sessione
+Ogni utente nel sito avrà una sessione attiva. La sessione deve contenere dopo ogni operazione di login e registrazion
+i seguenti dati : login = true (certifica accesso) username(username utente) ruolo(ruolo_id).
+L'accesso alle pagine private avverrà tramite il controllo dei dati di sessione per verificare se l'utente è stato
+autenticato e il suo ruolo per indirizzarlo alla dashboard corretta.
+
+** aggiunta Registrazione
+È possibile registrarsi come amministratore selezionando una casella di controllo nella pagina di registrazione. 
+Se l'utente desidera registrarsi come amministratore, oltre ai dati di un utente normale, deve inserire una chiave. 
+La chiave è: CHIAVE_ACCESSO_ADMIN. Se l'utente inserisce correttamente questa chiave 
+sarà registrato come utente amministratore.

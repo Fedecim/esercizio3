@@ -1,0 +1,58 @@
+Implementazione funzionalità : registrazione
+
+moduli coinvolti : registrati.php, regController.php, utenteModel.php, classe_db.php
+
+progettazione registrati.php :
+- avviare una sessione
+- controllare che la sessione attiva non abbia i campi :  dati : Login: true, username : username, email : email. Nel caso ci siano indirizzare l'utente verso area_privata appropriata
+nel caso non ci sia una sessione attiva proseguire
+- scrivere struttura pagina html
+- aggiungere form con tag label e input per : username,email,password
+- aggiungere input di tipo checkbox per fare selezionare all utente se intende registrarsi come admin
+- aggiungere un div all interno del form con id 'chiave_admin' il div deve avere style : display = none da manipolare con javascript nel caso l utente voglia registrarsi come admin (deve passare una chiave)
+- scrivere codice javascript per manipolare input checkbox : se viene selezionato deve mostrare all utente il div per l'inserimento della chiave registrazione admin
+- il form di registrazione deve avere metodo post e inviare al modulo processa_form.php
+- fine
+
+implementazione registrati.php
+
+Progettazione processa_form.php:
+
+- avviare una sessione
+- includi i seguenti moduli : regController.php
+- controllare se esiste la variabile post[registrazione]
+- se esiste crea un array assoc di nome $dati
+- estrai dalla variabile post i seguenti dati : username,password,email,ruolo e chiave(Se presente) e inseriscili nell array dati con le seguenti chiavi : username,password,email,ruolo,chiave
+- crea un oggetto regController di nome : reg e invoca il metodo : registrazione($dati) dell oggetto reg della classe regControler passando l'array dati come parametro
+- fine
+
+implementazione processa_form.php
+
+Progettazione metodo registrazione($dati) della classe regController modulo : regController.php
+
+- avvia una sessione
+- controlla che tutti i campi dell array ovvero : username,password,email,ruolo siano stati inseriti
+- controlla se è stato inserito il campo chiave in caso di conferma confronta la chiave inserita con la chiave : 'CHIAVE_ACCESSO_ADMIN' se sono uguali prosegue altrimenti
+reinderizza alla pagina registrazione con mex di errore : 'chiave inserita non valida'
+- controlla che email non sia una stringa vuota
+- prende il campo ruolo e lo cambia in : se = ad admin diventa = 5 se = a utente diventa = a 4
+- crea oggetto di classe utente di nome $utente e invoca il metodo add_utente($dati)
+- mette l'invocazione del metodo sotto try nel caso restituisce eccezione reinderizzare alla pagina registrati.php con mex di errore
+- altrimenti inserisci nella sessione attiva i seguenti dati : Login: true, username : username, email : email
+- visualizza stringa : 'registrazione completata con successo'
+- visualizza link che porta all area privata corretta
+- fine
+
+Progettazione metodo add_utente($dati)
+- crea array $dati_conn con dati per stabilire connessione con database tramite : server_name : 127.0.0.1, porta : 3306, utente : utente_reg , password: passwd_utente_reg , nome_db : esercizio3
+- crea un oggetto $db di classe Db passando i dati al costruttore.
+- crea un array indicizzato con le colonne dei valori (username,email,password,ruolo_id)
+- crea un array indicizzato con i valori delle colonne (......) inserendo : " ' " prima e dopo le stringhe
+- crea un array assoc di nome $dati_query con i seguenti dati : campi : arraycolonne, valori : arrayvalori, nome_tab : nome_tabella(utenti)
+- invoca sull oggetto il metodo insert passando l' array assoc $dati_query come parametro
+- il metodo sotto try se restituisce eccezione lancia a sua volta un eccezione dello stesso tipo con lo stesso messaggio di errore
+- se il metodo va a buon fine restituisce stringa : 'registrazione avvenuta con successo!"
+
+
+
+
